@@ -1,3 +1,5 @@
+const DAY_STRING = ['день', 'дня', 'дней'];
+const ANSWER = ['Да', 'Нет'];
 const DATA = {
     whichSite: ['landing', 'multiPage', 'onlineStore'],
     price: [4000, 8000, 26000],
@@ -8,7 +10,7 @@ const DATA = {
     metrikaYandex: [500, 1000, 2000],
     analyticsGoogle: [850, 1350, 3000],
     sendOrder: 500,
-    deadleneDay: [[2, 7], [3, 10], [7, 14]],
+    deadlineDay: [[2, 7], [3, 10], [7, 14]],
     deadlinePercent: [20, 17, 15]
 };
 
@@ -20,8 +22,26 @@ const endButton = document.querySelector('.end-button');
 const total = document.querySelector('.total');
 const fastRange = document.querySelector('.fast-range');
 const totalPriceSum = document.querySelector('.total_price__sum');
-const mobileTemplates=document.querySelector('#mobileTemplates');
 
+
+const desktopTemplates = document.getElementById('desktopTemplates');
+const adapt = document.getElementById('adapt');
+const mobileTemplates = document.getElementById('mobileTemplates');
+const editable = document.getElementById('editable');
+
+const checkboxLabelDesktopTemplatesValue = document.querySelector('.checkbox-label.desktopTemplates_value');
+const checkboxLabelAdaptValue = document.querySelector('.checkbox-label.adapt_value');
+const checkboxLabelMobileTemplatesValue = document.querySelector('.checkbox-label.mobileTemplates_value');
+const checkboxLabelEditableValue = document.querySelector('.checkbox-label.editable_value');
+const typeSite = document.querySelector('.type-site');
+const maxDeadline = document.querySelector('.max-deadline');
+const rangeDeadline = document.querySelector('.range-deadline');
+const deadlineValue = document.querySelector('.deadline-value');
+
+function declOfNum(n, titles) {
+    return n + ' ' + titles[n % 10 === 1 && n % 100 !== 11 ?
+        0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2];
+}
 
 function showElem(elem) {
     elem.style.display = 'block';
@@ -31,14 +51,22 @@ function hideElem(elem) {
     elem.style.display = 'none';
 }
 
-function enableElem(elem) {
-    elem.disabled=false;
+function renderTextContent(total, site, maxDay, minDay) {
+    totalPriceSum.textContent = total;
+    typeSite.textContent = site;
+    maxDeadline.textContent = declOfNum(maxDay, DAY_STRING);
+    rangeDeadline.min = minDay;
+    rangeDeadline.max = maxDay;
+    deadlineValue.textContent = declOfNum(rangeDeadline.value, DAY_STRING);
 }
 
 function priceCalculation(elem) {
     let result = 0;
     let index = 0;
     let options = [];
+    let site = '';
+    let maxDeadlineDay = '';
+    let minDeadlineDay = '';
 
     if (elem.name === 'whichSite') {
         for (const item of formCalculate.elements) {
@@ -51,6 +79,9 @@ function priceCalculation(elem) {
     for (const item of formCalculate.elements) {
         if (item.name === 'whichSite' && item.checked) {
             index = DATA.whichSite.indexOf(item.value);
+            site = item.dataset.site;
+            maxDeadlineDay = DATA.deadlineDay[index][1];
+            minDeadlineDay = DATA.deadlineDay[index][0];
         } else if (item.classList.contains('calc-handler') && item.checked) {
             options.push(item.value);
         }
@@ -71,17 +102,22 @@ function priceCalculation(elem) {
         }
     });
 
+
     result += DATA.price[index];
 
-    totalPriceSum.textContent = result;
+    renderTextContent(result, site, maxDeadlineDay, minDeadlineDay);
 }
 
 
 function handlerCallBackForm(event) {
     const target = event.target;
 
-    if (target.id==='adapt') {
-        if(target.checked) enableElem(mobileTemplates);
+    if (adapt.checked) {
+        mobileTemplates.disabled = false;
+
+    } else {
+        mobileTemplates.disabled = true;
+        mobileTemplates.checked = false;
     }
 
     if (target.classList.contains('want-faster')) {
@@ -91,6 +127,11 @@ function handlerCallBackForm(event) {
     if (target.classList.contains('calc-handler')) {
         priceCalculation(target);
     }
+
+    desktopTemplates.checked ? checkboxLabelDesktopTemplatesValue.textContent = ANSWER[0] : checkboxLabelDesktopTemplatesValue.textContent = ANSWER[1];
+    adapt.checked ? checkboxLabelAdaptValue.textContent = ANSWER[0] : checkboxLabelAdaptValue.textContent = ANSWER[1];
+    mobileTemplates.checked ? checkboxLabelMobileTemplatesValue.textContent = ANSWER[0] : checkboxLabelMobileTemplatesValue.textContent = ANSWER[1];
+    editable.checked ? checkboxLabelEditableValue.textContent = ANSWER[0] : checkboxLabelEditableValue.textContent = ANSWER[1];
 
 
 }
